@@ -71,6 +71,10 @@ def print_titulo(titulo):
   print(f"{Cores.AMARELO}   --- {titulo} ---   {Cores.RESET}")
   print(barra)
 
+def esperar_usuario():
+    """Pausa a execução e espera o usuário pressionar Enter para continuar."""
+    input(f"\n{Cores.CIANO}Pressione Enter para voltar ao menu...{Cores.RESET}")
+
 # --- Funções para Gerenciamento de Eventos ---
 
 def cadastrar_evento():
@@ -109,11 +113,14 @@ def cadastrar_evento():
     eventos.append(novo_evento)
     print_sucesso(f"Evento '{nome}' cadastrado com sucesso!")
 
-def visualizar_eventos():
+def visualizar_eventos(pausar=True):
     """Exibe todos os eventos disponíveis com suas informações."""
+    print("\033c", end="")  # Limpa o terminal antes de imprimir os eventos
     print_titulo("Eventos Disponíveis")
     if not eventos:
         print_info("Nenhum evento cadastrado no momento.")
+        if pausar:
+            esperar_usuario()
         return
 
     print(f"{Cores.AZUL}{'Nome do Evento':<30} {'Data':<15} {'Vagas Restantes':<20} {'Descrição'}{Cores.RESET}")
@@ -121,9 +128,13 @@ def visualizar_eventos():
     for evento in eventos:
         vagas_restantes = evento['vagas_maximas'] - len(evento['participantes'])
         print(f"{evento['nome']:<30} {evento['data']:<15} {vagas_restantes:<20} {evento['descricao']}")
+    
+    if pausar:
+        esperar_usuario()
 
 def atualizar_evento():
     """Busca um evento pelo nome e permite atualizar suas informações."""
+    visualizar_eventos(pausar=False)  # Mostra os eventos para o usuário escolher
     print_titulo("Atualização de Evento")
     nome_evento = input("Nome do evento a ser atualizado: ").strip().title()
 
@@ -157,6 +168,7 @@ def atualizar_evento():
 
 def excluir_evento():
     """Remove um evento da lista com base no nome."""
+    visualizar_eventos(pausar=False)  # Mostra os eventos para o usuário escolher
     print_titulo("Exclusão de Evento")
     nome_evento = input("Nome do evento a ser excluído: ").strip().title()
 
@@ -176,8 +188,8 @@ def excluir_evento():
 
 def inscrever_em_evento():
     """Inscreve um participante em um evento, se houver vagas."""
+    visualizar_eventos(pausar=False) # Mostra os eventos para o usuário escolher
     print_titulo("Inscrição em Evento")
-    visualizar_eventos() # Mostra os eventos para o usuário escolher
     if not eventos:
         return
 
@@ -201,20 +213,27 @@ def inscrever_em_evento():
 
 def visualizar_inscricoes():
     """Mostra a lista de participantes inscritos em um evento específico."""
+    visualizar_eventos(pausar=False)  # Mostra os eventos para o usuário escolher
     print_titulo("Visualizar Inscrições")
-    nome_evento = input("Digite o nome do evento para ver os inscritos: ").strip().title()
+    nome_evento = input("\nDigite o nome do evento para ver os inscritos: ").strip().title()
 
-    for evento in eventos:
-        if evento['nome'].lower() == nome_evento.lower():
-            print_info(f"Participantes inscritos em '{evento['nome']}':")
-            if evento['participantes']:
-                for i, participante in enumerate(evento['participantes']):
-                    print(f"  {i+1}. {participante}")
-            else:
-                print_info("  Nenhum participante inscrito neste evento.")
-            return
-            
-    print_erro("Evento não encontrado.")
+    evento_encontrado = None
+    for ev in eventos:
+        if ev['nome'].lower() == nome_evento.lower():
+            evento_encontrado = ev
+            break
+
+    if evento_encontrado:
+        print_info(f"Participantes inscritos em '{evento_encontrado['nome']}':")
+        if evento_encontrado['participantes']:
+            for i, participante in enumerate(evento_encontrado['participantes']):
+                print(f"  {i+1}. {participante}")
+        else:
+            print_info("  Nenhum participante inscrito neste evento.")
+    else:
+        print(f"{Cores.VERMELHO}Evento não encontrado.{Cores.RESET}")
+
+    esperar_usuario()
 
 # --- Função Principal (Menu) ---
 
